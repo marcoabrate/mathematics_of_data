@@ -15,9 +15,10 @@ from time import time
 def projNuc(Z, kappa):
     #PROJNUC This function implements the projection onto nuclear norm ball.
     
-    # Implement projection operator here!
+    u, sigma, vh = np.linalg.svd(Z, full_matrices=False)
+    sigma_l1 = projL1(sigma, kappa)
     
-    return 
+    return u @ np.diag(sigma_l1) @ vh
 
 
 # In[ ]:

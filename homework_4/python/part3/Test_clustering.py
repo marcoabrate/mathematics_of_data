@@ -73,25 +73,24 @@ def HomotopyCGM(kappa=10, maxit=np.int(1e3), beta0=1):
     objective    = [] # f(x)
     cur_iter    = [] 
     
-    #u = np.zeros((N,1))
-    iter_track = np.unique(np.ceil(np.power(2, np.linspace(0,20,100))))    
+    iter_track = np.unique(np.ceil(np.power(2, np.linspace(0,20,50))))
     
     for iteration in range(1, maxit+1):
         
         # Update Step Size
-        gamma = ???
+        gamma = 2.0/(iteration+1)
         
         # Update beta
-        beta_ = ???
+        beta_ = beta0/np.sqrt(iteration+1)
         
         # Write down the vk to use in the lmo (eigenvalue routine)
-        vk = ???
+        vk = beta_*C + At1(A1(X) - b) + At2(A2(X) - b) + 1000*np.minimum(X, 0)
         vk = 0.5*(vk + vk.T)
         
         # Linear minimization oracle
         # use eigsh function with proper settings to calculate the lmo
         # See Reference: https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.eigsh.html#scipy.sparse.linalg.eigsh 
-        q, u = eigsh(???)
+        q, u = eigsh(vk, k=1, which='SA')
         u = sqrt(kappa)*u
         X_bar = np.outer(u,u)
         
@@ -102,12 +101,11 @@ def HomotopyCGM(kappa=10, maxit=np.int(1e3), beta0=1):
         AX1_b = (1.0-gamma)*AX1_b + gamma*(AX_bar_b)
         
         # Update X
-        X = ???
-        
-        if any(iteration == iter_track) or iteration == maxit:
-            #print(X)
-            feasibility1.append(np.linalg.norm(AX1_b)/N)
-            feasibility2.append(np.linalg.norm(np.minimum(X,0), ord='fro')) # distance to positive orthant
+        X = (1 - gamma)*X + gamma*X_bar
+                
+        if any(iteration == iter_track) or iteration==maxit:
+            feasibility1.append(np.linalg.norm(AX1_b)/N) 
+            feasibility2.append(np.linalg.norm(np.minimum(X,0), ord='fro'))# distance to positive orthant
             objective.append(np.sum(C.flatten()*X.flatten()))
             cur_iter.append(iteration)
             print('{:03d} | {:.4e}| {:.4e}| {:.4e}|'.format(iteration, feasibility1[-1], feasibility2[-1],objective[-1]))

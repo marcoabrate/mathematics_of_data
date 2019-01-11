@@ -12,12 +12,13 @@ from time import time
 
 # In[ ]:
 
-def sharpNuc(Z, kappa):
-    #SHARPNUC This function implements the sharp operator for the nuclear norm ball constraint. .
+def lmoNuc(Z, kappa):
+    #LMONUC This function implements the LMO operator for the nuclear norm ball constraint. .
     
-    # Implement sharp operator here!
+    u, sigmaMAX, vt =\
+        linalg.svds(Z, k=1, which='LM', return_singular_vectors=True)
     
-    return 
+    return -kappa * np.outer(u, vt)
 
 
 # In[ ]:
@@ -35,7 +36,7 @@ Z = csr_matrix((Rating, (MovID, UserID)),shape=(nM, nU),dtype=float)
 kappa = 5000
 
 tstart = time()
-Z_proj = sharpNuc(Z, kappa)
+Z_proj = lmoNuc(Z, kappa)
 elapsed = time() - tstart
 print "sharp of 100k data takes ",elapsed," sec"
 
@@ -56,7 +57,7 @@ Z = csr_matrix((Rating, (MovID, UserID)),shape=(nM, nU),dtype=float)
 kappa = 5000
 
 tstart = time()
-Z_proj = sharpNuc(Z, kappa)
+Z_proj = lmoNuc(Z, kappa)
 elapsed = time() - tstart
 print "sharp of 1M data takes ",elapsed," sec"
 

@@ -119,8 +119,9 @@ def FrankWolfe(Aoper, AToper, b, n1, n2, kappa, maxit, plotFunc):
 
         # Form the residual and fix the operator to be used in svds.
         res_cur = AX_t - b
-        ATop1 = lambda w: AToper["matvec"](???,w)
-        ATop2 = lambda w: AToper["rmatvec"](???,w)
+
+        ATop1 = lambda w: AToper["matvec"](res_cur,w)
+        ATop2 = lambda w: AToper["rmatvec"](res_cur,w)
         svdsArg = LinearOperator((n2,n1), matvec=ATop1, rmatvec=ATop2)
         topLe_vec, singVal, topRe_vec = svds(svdsArg, k=1, tol=1e-4, which='LM')
         # Note: we could also used svds. Lansvd and svds solve the same problem with similar
@@ -132,22 +133,20 @@ def FrankWolfe(Aoper, AToper, b, n1, n2, kappa, maxit, plotFunc):
         AXsharp_t = Aoper(topLe_vec, -kappa, topRe_vec.T)
         
         # Step size
-        weight = ???
+        weight = 2.0/(iteration+2)
         
         # Update A*X
         AX_t = (1.0-weight)*AX_t + weight*(AXsharp_t)
         
         # Update X
-        X = ???
+        X = (1.0 - weight)*X + weight*(-kappa*np.outer(topLe_vec, topRe_vec))
         
         # Show the reconstruction (at every 10 iteration) 
-        if (float(iteration/10) == float(iteration)/10):
+        if (iteration%200 == 0):
             U,S,V = np.linalg.svd(X,full_matrices=0,compute_uv=1)
             plotFunc(U[:,0])
 
     return X
-    
-
 
 # In[ ]:
 
